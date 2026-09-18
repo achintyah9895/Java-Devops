@@ -13,7 +13,11 @@ pipeline {
         DOCKER_USER     = 'jishnudev9895'
         IMAGE_NAME      = 'java-webapp'
         IMAGE_TAG       = "${env.BUILD_NUMBER}" // Uses Jenkins build number as tag
-        DOCKER_CRED_ID  = 'dockerHub-creds' // Required for pushing
+        DOCKER_CRED_ID  = 'dockerHub-creds' 
+
+        MINIKUBE_HOST   = '172.31.42.27'
+        MINIKUBE_USER   = 'ubuntu'
+        MINIKUBE_CRED_ID = 'SingaporeKey'
     }
 
     stages {
@@ -42,8 +46,7 @@ pipeline {
                 }
             }
         }
-
-        stage('Push to Docker Hub') {
+         stage('Push to Docker Hub') {
             steps {
                 script {
                     withDockerRegistry( 
@@ -56,6 +59,31 @@ pipeline {
                 }
             }
         }
+         stage('Deploy to Minikube') {
+            steps {
+                script {
+        
+                    sh """
+                        sed -i 's/IMAGE_TAG/${IMAGE_TAG}/g' k8s/deployment.yaml
+                    """
+        
+                    sshagent(credentials: ["${MINIKUBE_CRED_ID}"]) {
+        
+                        sh """
+                            ssh -o StrictHostKeyChecking=no ${MINIKUBE_USER}@${MINIKUBE_HOST} "minikube start --driver=docker --ports=30080:30080"
+                            
+                            scp -o StrictHostKeyChecking=no k8s/*.yaml ${MINIKUBE_USER}@${MINIKUBE_HOST}:/tmp/
+        
+                            ssh -o StrictHostKeyChecking=no ${MINIKUBE_USER}@${MINIKUBE_HOST} '
+                                    kubectl apply -f /tmp/deployment.yaml &&
+                                    kubectl apply -f /tmp/service.yaml
+                                '
+                        """
+                    }
+                }
+            }
+        }
+
 
         stage('Cleanup Local Images') {
             steps {
