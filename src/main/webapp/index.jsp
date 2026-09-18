@@ -3,7 +3,7 @@
 <h1><font color='red'>Welcome to DevOps (Test App)<font></h1>
 <h2>Learn In Easy Way </h2>
 
-<a href="https://www.linkedin.com/in/jishnu9895dev/">Click Here To see My Profile</a>
+<a href="https://www.linkedin.com/in/jishnu9895dev/">Click Here To see My Linkedin</a>
 <h1>TEST CODE</h1>
 <br/>
 
