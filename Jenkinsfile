@@ -69,9 +69,7 @@ pipeline {
         
                     sshagent(credentials: ["${MINIKUBE_CRED_ID}"]) {
         
-                        sh """
-                            ssh -o StrictHostKeyChecking=no ${MINIKUBE_USER}@${MINIKUBE_HOST} "minikube start --driver=docker --ports=30080:30080"
-                            
+                        sh """                          
                             scp -o StrictHostKeyChecking=no k8s/*.yaml ${MINIKUBE_USER}@${MINIKUBE_HOST}:/tmp/
         
                             ssh -o StrictHostKeyChecking=no ${MINIKUBE_USER}@${MINIKUBE_HOST} '
