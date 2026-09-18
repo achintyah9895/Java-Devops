@@ -27,6 +27,11 @@ pipeline {
                     branch: "${BRANCH_NAME}"
             }
         }
+	stage('Trivy Filesystem Scan') {
+            steps {
+	           sh "trivy fs --exit-code 1 --severity HIGH,CRITICAL ."
+		}
+	}
       
         stage('Maven Build') {
             steps {
@@ -44,6 +49,12 @@ pipeline {
                         sh "docker tag ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_USER}/${IMAGE_NAME}:latest"
                          
                 }
+            }
+        }
+
+	stage('Trivy Image Scan') {
+            steps {
+                sh "trivy image --exit-code 1 --severity HIGH,CRITICAL ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
             }
         }
          stage('Push to Docker Hub') {
