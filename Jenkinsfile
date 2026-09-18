@@ -64,17 +64,17 @@ pipeline {
                 script {
         
                     sh """
-                        sed -i 's/IMAGE_TAG/${IMAGE_TAG}/g' k8s/deployment.yaml
+                        sed -i 's/IMAGE_TAG/${IMAGE_TAG}/g' k8s/deploy.yaml
                     """
         
                     sshagent(credentials: ["${MINIKUBE_CRED_ID}"]) {
         
                         sh """                          
-                            scp -o StrictHostKeyChecking=no k8s/*.yaml ${MINIKUBE_USER}@${MINIKUBE_HOST}:/tmp/
+                            scp -o StrictHostKeyChecking=no k8s/*.yaml ${MINIKUBE_USER}@${MINIKUBE_HOST}:/home/ubuntu
         
                             ssh -o StrictHostKeyChecking=no ${MINIKUBE_USER}@${MINIKUBE_HOST} '
-                                    kubectl apply -f /tmp/deployment.yaml &&
-                                    kubectl apply -f /tmp/service.yaml
+                                    kubectl apply -f /home/ubuntu/deploy.yaml &&
+                                    kubectl apply -f /home/ubuntu/service.yaml
                                 '
                         """
                     }
