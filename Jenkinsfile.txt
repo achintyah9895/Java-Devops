@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     tools {
-        
-        maven 'maven-3.9.12'
+        maven 'maven-3.9'
     }
 
     environment {
@@ -24,23 +23,22 @@ pipeline {
                     branch: "${BRANCH_NAME}"
             }
         }
-
+      
         stage('Maven Build') {
             steps {
                 echo 'Running Maven clean package...'
-                sh 'mvn clean package'
+              
+                    sh 'mvn clean package'
+                
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Building Docker image: ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
-                    // Builds the image using the Dockerfile in the root workspace
-                    dockerImage = docker.build("${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}")
-                    
-                    // Creates a secondary 'latest' tag
-                    sh "docker tag ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_USER}/${IMAGE_NAME}:latest"
+                        dockerImage = docker.build("${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}")
+                        sh "docker tag ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG} ${DOCKER_USER}/${IMAGE_NAME}:latest"
+                         
                 }
             }
         }
@@ -48,21 +46,20 @@ pipeline {
         stage('Push to Docker Hub') {
             steps {
                 script {
-                    // Authenticates securely to Docker Hub and pushes both tags
-                    docker.withRegistry('https://docker.io', DOCKER_CRED_ID) {
-                        echo "Pushing build-specific tag..."
-                        dockerImage.push()
-                        
-                        echo "Pushing latest tag..."
-                        dockerImage.push('latest')
-                    }
+                    withDockerRegistry( 
+                        credentialsId: "${DOCKER_CRED_ID}",
+                         url: 'https://index.docker.io/v1/' ) 
+                                { 
+                                  sh "docker push ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}" 
+                                  sh "docker push ${DOCKER_USER}/${IMAGE_NAME}:latest" 
+                      }
                 }
             }
         }
 
         stage('Cleanup Local Images') {
             steps {
-                // Removes local image copies to save disk space on your Jenkins node
+                
                 sh "docker rmi ${DOCKER_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
                 sh "docker rmi ${DOCKER_USER}/${IMAGE_NAME}:latest"
             }
@@ -71,7 +68,7 @@ pipeline {
 
     post {
         always {
-            cleanWs() // Completely clears the workspace directory after the run
+            cleanWs() 
         }
         success {
             echo 'Pipeline completed successfully!'
