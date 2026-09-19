@@ -7,6 +7,14 @@
   <version>3.0-RELEASE</version>
   <name>01-maven-web-app</name>
   <url>http://maven.apache.org</url>
+
+  <distributionManagement>
+    <repository>
+      <id>nexus</id>
+      <name>Nexus Releases</name>
+      <url>http://18.143.132.155:8081/repository/web-app-repo/</url>
+    </repository>
+  </distributionManagement>
  
   <dependencies>
     <dependency>
